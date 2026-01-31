@@ -1,145 +1,704 @@
-<!DOCTYPE html>
+
+
+<meta name='viewport'
+content='width=device-width, initial-scale=1'/><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agendamento Barbearia</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Leal Barbearia • Agendamento</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <style>
-body{
-  font-family: Arial, sans-serif;
-  background:#0b0b0b;
-  color:#fff;
-  text-align:center;
-  padding:20px;
-}
-h1{margin-bottom:10px;}
-input[type=date]{
-  padding:10px;
-  border-radius:8px;
-  border:none;
-  margin-bottom:20px;
-}
-#slots{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(80px,1fr));
-  gap:10px;
-  max-width:420px;
-  margin:0 auto 20px;
-}
-.slot{
-  padding:10px;
-  border-radius:8px;
-  font-weight:bold;
-}
-.free{background:#1db954;color:#000;cursor:pointer;}
-.busy{background:#c0392b;opacity:.7;cursor:not-allowed;}
-.selected{outline:3px solid #fff;}
-button{
-  padding:14px 20px;
-  border:none;
-  border-radius:8px;
-  font-size:16px;
-  background:#25d366;
-  color:#000;
-  font-weight:bold;
-}
-button:disabled{opacity:.5;}
-.legend{opacity:.7;font-size:14px;}
+  :root{
+    --gold:#d4af37;
+    --dark:#050505;
+    --card:#101010;
+    --muted:#cfcfcf;
+    --line:rgba(212,175,55,.25);
+    --radius:18px;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:'Poppins', sans-serif;
+    color:#fff;
+    background: radial-gradient(circle at top, rgba(212,175,55,.14), transparent 45%),
+                linear-gradient(180deg, #000, var(--dark));
+  }
+
+  .wrap{
+    max-width:560px;
+    margin:auto;
+    padding:18px 14px 60px;
+  }
+
+  header{
+    text-align:center;
+    padding:18px 14px 10px;
+    position:relative;
+  }
+
+  .admin-link{
+    position:absolute;
+    right:14px;
+    top:14px;
+    font-size:12px;
+    opacity:.65;
+    cursor:pointer;
+    user-select:none;
+    border:1px solid rgba(255,255,255,.10);
+    padding:8px 10px;
+    border-radius:999px;
+    background: rgba(0,0,0,.25);
+  }
+
+  .admin-link:hover{opacity:1}
+
+  .logo{
+    width:130px;
+    height:130px;
+    object-fit:cover;
+    border-radius:26px;
+    border:1px solid rgba(212,175,55,.55);
+    box-shadow:0 0 45px rgba(212,175,55,.25);
+    background:#000;
+  }
+
+  h1{
+    margin:14px 0 2px;
+    letter-spacing:4px;
+    font-weight:800;
+    color:var(--gold);
+    font-size:30px;
+    font-family:'Cinzel', serif;
+    text-transform:uppercase;
+  }
+
+  .subtitle{
+    margin:0;
+    font-size:13px;
+    opacity:.85;
+    color:var(--muted);
+  }
+
+  .card{
+    margin-top:16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 50%),
+                linear-gradient(145deg, #121212, #070707);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding:16px;
+    box-shadow: 0 20px 70px rgba(0,0,0,.6);
+  }
+
+  .title{
+    color:var(--gold);
+    font-weight:900;
+    letter-spacing:1px;
+    margin:0 0 12px;
+    text-align:center;
+    font-family:'Cinzel', serif;
+  }
+
+  .info{
+    display:grid;
+    gap:8px;
+    font-size:14px;
+    color:var(--muted);
+    text-align:center;
+  }
+
+  .btn{
+    display:block;
+    width:100%;
+    margin-top:12px;
+    padding:14px 12px;
+    border-radius:999px;
+    font-weight:900;
+    letter-spacing:.4px;
+    border:none;
+    cursor:pointer;
+    text-decoration:none;
+    text-align:center;
+  }
+
+  .btn-gold{
+    background: linear-gradient(135deg, #f3df91, var(--gold), #9e7c23);
+    color:#000;
+  }
+
+  .btn-outline{
+    background: transparent;
+    border:1px solid rgba(212,175,55,.55);
+    color: var(--gold);
+  }
+
+  /* Calendário */
+  .cal-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+  }
+
+  .month{
+    font-weight:900;
+    letter-spacing:1px;
+    color:#fff;
+  }
+
+  .cal-btn{
+    padding:10px 14px;
+    border-radius:14px;
+    background:#0b0b0b;
+    border:1px solid rgba(255,255,255,.08);
+    color:#fff;
+    cursor:pointer;
+    font-weight:800;
+  }
+
+  .weekdays{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:8px;
+    margin-bottom:10px;
+    opacity:.75;
+    font-size:12px;
+    text-align:center;
+    color:var(--muted);
+  }
+
+  .days{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:8px;
+  }
+
+  .day{
+    padding:12px 0;
+    text-align:center;
+    border-radius:14px;
+    background: rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+    cursor:pointer;
+    font-weight:800;
+  }
+
+  .day.disabled{
+    opacity:.25;
+    cursor:not-allowed;
+  }
+
+  .day.selected{
+    outline:2px solid rgba(212,175,55,.75);
+    background: rgba(212,175,55,.18);
+  }
+
+  /* Horários */
+  .slots{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(95px, 1fr));
+    gap:10px;
+    margin-top:12px;
+  }
+
+  .slot{
+    padding:12px 10px;
+    border-radius:14px;
+    text-align:center;
+    font-weight:900;
+    letter-spacing:.4px;
+    border:1px solid rgba(255,255,255,.07);
+    user-select:none;
+  }
+
+  .slot.free{
+    background: rgba(0,170,80,.18);
+    border-color: rgba(0,170,80,.35);
+    cursor:pointer;
+  }
+
+  .slot.busy{
+    background: rgba(180,10,10,.20);
+    border-color: rgba(180,10,10,.35);
+    opacity:.55;
+  }
+
+  .slot.selected{
+    outline:2px solid rgba(212,175,55,.8);
+  }
+
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin:10px 0 6px;
+    margin-left:6px;
+  }
+
+  input, select, textarea{
+    width:100%;
+    padding:13px 14px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.08);
+    background: rgba(0,0,0,.35);
+    color:#fff;
+    outline:none;
+  }
+
+  textarea{min-height:90px; resize:none}
+
+  .legend{
+    margin-top:10px;
+    font-size:12px;
+    color:var(--muted);
+    opacity:.9;
+    text-align:center;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:16px;
+    font-size:12px;
+    opacity:.75;
+    color:var(--muted);
+  }
+
+  /* ADMIN */
+  #adminPanel{
+    display:none;
+  }
+
+  .adminBox{
+    border:1px solid rgba(212,175,55,.35);
+    border-radius:16px;
+    padding:14px;
+    background: rgba(0,0,0,.35);
+  }
+
+  .metricGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:12px;
+  }
+
+  .metric{
+    padding:12px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.02);
+  }
+
+  .metric b{
+    display:block;
+    color:var(--gold);
+    font-size:12px;
+    letter-spacing:.4px;
+  }
+
+  .metric span{
+    font-size:20px;
+    font-weight:900;
+    display:block;
+    margin-top:4px;
+  }
+
 </style>
 </head>
 
 <body>
+<div class="wrap">
 
-<h1>Agende seu horário 💈</h1>
+  <header>
+    <div class="admin-link" onclick="abrirLoginAdmin()">🔒 Área ADM</div>
 
-<input type="date" id="datePicker">
+    <img class="logo" src="logo.Png" alt="Leal Barbearia">
+    <h1>LEAL BARBEARIA</h1>
+    <p class="subtitle">Curitiba - PR • Seg a Sáb • 09:00 às 21:00 • 40min</p>
+  </header>
 
-<div id="slots">
-  <div class="legend">Selecione uma data 📅</div>
+  <!-- ✅ ÁREA CLIENTE -->
+  <div id="clienteArea">
+
+    <div class="card">
+      <h2 class="title">📍 INFORMAÇÕES</h2>
+      <div class="info">
+        <div>Rua Vitória Visinoni Campos Nº 145</div>
+        <div>WhatsApp: (41) 9861-1478</div>
+      </div>
+
+      <a class="btn btn-outline" target="_blank" href="https://instagram.com/leal_do_corte_">
+        📸 Instagram @leal_do_corte_
+      </a>
+    </div>
+
+    <div class="card">
+      <h2 class="title">📅 ESCOLHA UMA DATA</h2>
+
+      <div class="cal-top">
+        <button class="cal-btn" onclick="prevMonth()">◀</button>
+        <div class="month" id="monthLabel">Mês</div>
+        <button class="cal-btn" onclick="nextMonth()">▶</button>
+      </div>
+
+      <div class="weekdays">
+        <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div>
+      </div>
+
+      <div class="days" id="calendarDays"></div>
+
+      <div class="legend">Clique no dia para ver os horários 🟢/🔴</div>
+    </div>
+
+    <div class="card">
+      <h2 class="title">🕒 HORÁRIOS</h2>
+
+      <div id="selectedDateText" class="legend">Nenhuma data selecionada</div>
+      <div class="slots" id="slots"></div>
+      <div class="legend">🟢 Disponível • 🔴 Ocupado</div>
+
+      <label>Seu nome</label>
+      <input id="nome" placeholder="Ex: João Silva">
+
+      <label>Seu telefone</label>
+      <input id="telefone" placeholder="Ex: (41) 99999-9999">
+
+      <label>Serviço</label>
+      <select id="servico">
+        <option value="Cabelo">Cabelo</option>
+        <option value="Barba">Barba</option>
+        <option value="Cabelo + Barba">Cabelo + Barba</option> valeu="sombrancelha">Sombrancelha</option>
+      </select>
+
+      <label>Forma de pagamento</label>
+      <select id="pagamento">
+        <option value="PIX">PIX</option>
+        <option value="Cartão">Cartão</option>
+        <option value="Dinheiro">Dinheiro</option>
+      </select>
+
+      <div class="legend" style="margin-top:10px;">
+        ✅ PIX: <b style="color:var(--gold)">CHAVE_DO_PIX_AQUI</b><br>
+        (copie e pague para confirmar)
+      </div>
+
+      <label>Observação</label>
+      <textarea id="obs" placeholder="Ex: degradê na 0,5 / design na sobrancelha..."></textarea>
+
+      <a id="btnWhats" class="btn btn-gold" href="#" target="_blank">
+        ✅ AGENDAR NO WHATSAPP
+      </a>
+
+      <a class="btn btn-outline" id="btnComprovante" href="#" target="_blank">
+        📎 ENVIAR COMPROVANTE (WhatsApp)
+      </a>
+
+      <footer> © 2026 Leal Barbearia • Todos os direitos reservados
+• Agendamento Online</footer>
+    </div>
+
+  </div>
+
+  <!-- ✅ ÁREA ADMIN (DONO) -->
+  <div id="adminPanel">
+    <div class="card">
+      <h2 class="title">🔒 PAINEL DO DONO</h2>
+
+      <div class="adminBox">
+        <div class="legend" style="margin:0">
+          Aqui o dono vê controle e relatórios (cliente não vê).
+        </div>
+
+        <div class="metricGrid">
+          <div class="metric">
+            <b>Janeiro • Cortes</b>
+            <span id="mCortes">0</span>
+          </div>
+          <div class="metric">
+            <b>Janeiro • Barbas</b>
+            <span id="mBarbas">0</span>
+          </div>
+          <div class="metric">
+            <b>Janeiro • Cabelo+Barba</b>
+            <span id="mCombo">0</span>
+          </div>
+          <div class="metric">
+            <b>Janeiro • Total</b>
+            <span id="mTotal">0</span>
+          </div>
+        </div>
+
+        <button class="btn btn-outline" onclick="sairAdmin()">🚪 Sair do Admin</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<button id="whatsBtn" disabled>Agendar no WhatsApp</button>
-
 <script>
-// 🔧 CONFIG
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1NQNYt1AkGFU75WFrWkXwpqugGH5TXwVUZ9r0AGnm_xY/export?format=csv";
-const WHATSAPP = "5599999999999"; // TROQUE PELO NÚMERO DO BARBEIRO
+  const WHATS_NUMERO = "554198611478"; // ✅ certo
 
-const timeSlots = [
- "09:00","09:30","10:00","10:30","11:00","11:30",
- "12:00","12:30","13:00","13:30","14:00","14:30",
- "15:00","15:30","16:00","16:30","17:00","17:30",
- "18:00","18:30","19:00","19:30","20:00","20:30","21:00"
-];
+  // ✅ senha do admin (troque depois)
+  const SENHA_ADMIN = "LEAL2026";
 
-let busyByDate = {};
-let selectedDate = "";
-let selectedTime = "";
+  const timeSlots = [
+    "08:00","08:40","09:20","10:00","10:40","11:20",
+    "12:00","12:40","13:20","14:00","14:40","15:20",
+    "16:00","16:40","17:20","18:00","18:40","19:20",
+    "20:00","20:40"
+  ];
 
-const datePicker = document.getElementById("datePicker");
-const slotsDiv = document.getElementById("slots");
-const btn = document.getElementById("whatsBtn");
+  // 🔴 Depois conecta com planilha (por enquanto é vazio)
+  const busyByDate = {};
 
-// DATA MÍNIMA = HOJE
-datePicker.min = new Date().toISOString().split("T")[0];
+  // ✅ relatório fake (depois a planilha alimenta)
+  const relatorioJaneiro = {cortes: 0, barbas: 0, combo: 0};
 
-// 🔹 LER PLANILHA
-fetch(SHEET_URL)
-.then(r=>r.text())
-.then(csv=>{
-  const lines = csv.split("\n").slice(1);
-  lines.forEach(l=>{
-    const [data, hora] = l.split(",");
-    if(!busyByDate[data]) busyByDate[data] = [];
-    busyByDate[data].push(hora);
-  });
-});
+  let current = new Date();
+  let selectedDate = "";
+  let selectedTime = "";
 
-datePicker.addEventListener("change",()=>{
-  selectedDate = datePicker.value;
-  selectedTime = "";
-  btn.disabled = true;
-  renderSlots();
-});
+  function abrirLoginAdmin(){
+    const senha = prompt("Digite a senha da Área do Dono:");
+    if(senha === SENHA_ADMIN){
+      document.getElementById("clienteArea").style.display = "none";
+      document.getElementById("adminPanel").style.display = "block";
+      carregarRelatorio();
+    }else{
+      alert("Senha incorreta ❌");
+    }
+  }
 
-function renderSlots(){
-  slotsDiv.innerHTML = "";
-  const busyList = new Set(busyByDate[selectedDate] || []);
-  const now = new Date();
+  function sairAdmin(){
+    document.getElementById("adminPanel").style.display = "none";
+    document.getElementById("clienteArea").style.display = "block";
+  }
 
-  timeSlots.forEach(t=>{
-    const el = document.createElement("div");
-    const [h,m] = t.split(":");
+  function carregarRelatorio(){
+    const total = relatorioJaneiro.cortes + relatorioJaneiro.barbas + relatorioJaneiro.combo;
+    document.getElementById("mCortes").innerText = relatorioJaneiro.cortes;
+    document.getElementById("mBarbas").innerText = relatorioJaneiro.barbas;
+    document.getElementById("mCombo").innerText = relatorioJaneiro.combo;
+    document.getElementById("mTotal").innerText = total;
+  }
 
-    const slotDate = new Date(selectedDate);
-    slotDate.setHours(h,m,0,0);
+  function formatMonthLabel(date){
+    const months = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    return months[date.getMonth()] + " " + date.getFullYear();
+  }
 
-    const bloqueado = slotDate < now || busyList.has(t);
-    el.className = "slot " + (bloqueado ? "busy" : "free");
-    el.innerText = t;
+  function pad(n){ return String(n).padStart(2,'0'); }
 
-    if(!bloqueado){
-      el.onclick = ()=>{
-        document.querySelectorAll(".slot").forEach(x=>x.classList.remove("selected"));
-        el.classList.add("selected");
-        selectedTime = t;
-        btn.disabled = false;
-      };
+  function toYMD(year, monthIndex, day){
+    return `${year}-${pad(monthIndex+1)}-${pad(day)}`;
+  }
+
+  function renderCalendar(){
+    document.getElementById("monthLabel").innerText = formatMonthLabel(current);
+
+    const year = current.getFullYear();
+    const month = current.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+
+    const cal = document.getElementById("calendarDays");
+    cal.innerHTML = "";
+
+    for(let i=0;i<firstDay;i++){
+      const d = document.createElement("div");
+      d.className = "day disabled";
+      d.innerText = "";
+      cal.appendChild(d);
     }
 
-    slotsDiv.appendChild(el);
+    for(let day=1; day<=daysInMonth; day++){
+      const ymd = toYMD(year, month, day);
+      const btn = document.createElement("div");
+      btn.className = "day";
+      btn.innerText = day;
+
+      const today = new Date();
+      const dateObj = new Date(year, month, day);
+      today.setHours(0,0,0,0);
+
+      if(dateObj < today){
+        btn.classList.add("disabled");
+      }else{
+        btn.onclick = ()=> selectDate(ymd, btn);
+      }
+
+      if(ymd === selectedDate) btn.classList.add("selected");
+
+      cal.appendChild(btn);
+    }
+  }
+
+  function selectDate(ymd, element){
+    selectedDate = ymd;
+    selectedTime = "";
+
+    document.querySelectorAll(".day").forEach(d=> d.classList.remove("selected"));
+    element.classList.add("selected");
+
+    document.getElementById("selectedDateText").innerText = "Data selecionada: " + ymd;
+    renderSlots();
+    updateWhatsLinks();
+  }
+
+  function renderSlots(){
+    const slots = document.getElementById("slots");
+    slots.innerHTML = "";
+
+    if(!selectedDate){
+      slots.innerHTML = "<div class='legend'>Selecione uma data primeiro ✅</div>";
+      return;
+    }
+
+    const busyList = new Set(busyByDate[selectedDate] || []);
+
+    timeSlots.forEach(t=>{
+      const s = document.createElement("div");
+      const isBusy = busyList.has(t);
+
+      s.className = "slot " + (isBusy ? "busy" : "free");
+      s.innerText = t;
+
+      if(!isBusy){
+        s.onclick = ()=>{
+          document.querySelectorAll(".slot").forEach(x=> x.classList.remove("selected"));
+          s.classList.add("selected");
+          selectedTime = t;
+          updateWhatsLinks();
+        };
+      }
+
+      slots.appendChild(s);
+    });
+  }
+
+  function prevMonth(){
+    current.setMonth(current.getMonth() - 1);
+    renderCalendar();
+  }
+
+  function nextMonth(){
+    current.setMonth(current.getMonth() + 1);
+    renderCalendar();
+  }
+
+  function updateWhatsLinks(){
+    const nome = document.getElementById("nome").value.trim();
+    const telefone = document.getElementById("telefone").value.trim();
+    const servico = document.getElementById("servico").value;
+    const pagamento = document.getElementById("pagamento").value;
+    const obs = document.getElementById("obs").value.trim();
+
+    const btn = document.getElementById("btnWhats");
+    const btnComp = document.getElementById("btnComprovante");
+
+    if(!selectedDate || !selectedTime){
+      btn.href = "#";
+      btnComp.href = "#";
+      return;
+    }
+
+    const msg =
+`Olá! Quero agendar na LEAL BARBEARIA ✅
+
+👤 Nome: ${nome || "Não informado"}
+📞 Telefone: ${telefone || "Não informado"}
+📅 Data: ${selectedDate}
+🕒 Horário: ${selectedTime}
+💈 Serviço: ${servico}
+💳 Pagamento: ${pagamento}
+
+📝 Obs: ${obs || "Sem observações"}`;
+
+    btn.href = "https://wa.me/" + WHATS_NUMERO + "?text=" + encodeURIComponent(msg);
+
+    const msgComp = `Olá! Segue o comprovante do meu agendamento ✅\n\n📅 ${selectedDate}\n🕒 ${selectedTime}\n👤 ${nome || ""}`;
+    btnComp.href = "https://wa.me/" + WHATS_NUMERO + "?text=" + encodeURIComponent(msgComp);
+  }
+
+    
+  ["nome","telefone","servico","pagamento","obs"].forEach(id=>{
+    document.getElementById(id).addEventListener("input", updateWhatsLinks);
+    document.getElementById(id).addEventListener("change", updateWhatsLinks);
+  });
+
+  renderCalendar();
+  renderSlots();
+</script>
+<script>
+const csvUrl = "https://docs.google.com/spreadsheets/d/1NQNYt1AkGFU75WFrWkXwpqugGH5TXwVUZ9r0AGnm_xY/export?format=csv";
+
+const horarios = [
+  "09:00","09:40","10:20","11:00","11:40","12:20",
+  "13:00","13:40","14:20","15:00","15:40","16:20",
+  "17:00","17:40","18:20","19:00","19:40","20:20"
+];
+
+const hoje = new Date().toISOString().split("T")[0];
+const agora = new Date();
+
+async function carregarAgendamentos() {
+  const resp = await fetch(csvUrl);
+  const texto = await resp.text();
+  const linhas = texto.split("\n").slice(1);
+
+  return linhas.map(l => {
+    const [data, horario, status] = l.split(",");
+    return { data, horario, status };
   });
 }
 
-btn.onclick = ()=>{
-  const msg = `Olá! Quero agendar um horário 💈
-📅 Data: ${selectedDate}
-⏰ Horário: ${selectedTime}`;
+function criarHorarios(ocupados) {
+  const container = document.getElementById("horarios");
+  container.innerHTML = "";
 
-  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`,"_blank");
-};
+  horarios.forEach(h => {
+    const btn = document.createElement("button");
+    btn.innerText = h;
+
+    const dataHora = new Date(`${hoje}T${h}:00`);
+
+    const jaPassou = dataHora < agora;
+    const ocupado = ocupados.some(o =>
+      o.data === hoje && o.horario === h && o.status.trim() === "OCUPADO"
+    );
+
+    if (jaPassou || ocupado) {
+      btn.style.background = "#c0392b";
+      btn.disabled = true;
+    } else {
+      btn.style.background = "#2ecc71";
+      btn.onclick = () => agendarHorario(h, btn);
+    }
+
+    container.appendChild(btn);
+  });
+}
+
+function agendarHorario(horario, botao) {
+  const telefone = "55SEUNUMEROAQUI";
+  const msg = `Olá! Gostaria de agendar um horário às ${horario}`;
+  const link = `https://wa.me/${telefone}?text=${encodeURIComponent(msg)}`;
+
+  botao.style.background = "#c0392b";
+  botao.disabled = true;
+
+  window.open(link, "_blank");
+}
+
+(async () => {
+  const ocupados = await carregarAgendamentos();
+  criarHorarios(ocupados);
+})();
 </script>
-
 </body>
-</html>
+    

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agendamento Barbearia</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#0b0b0b;
+  color:#fff;
+  text-align:center;
+  padding:20px;
+}
+h1{margin-bottom:10px;}
+input[type=date]{
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin-bottom:20px;
+}
+#slots{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(80px,1fr));
+  gap:10px;
+  max-width:420px;
+  margin:0 auto 20px;
+}
+.slot{
+  padding:10px;
+  border-radius:8px;
+  font-weight:bold;
+}
+.free{background:#1db954;color:#000;cursor:pointer;}
+.busy{background:#c0392b;opacity:.7;cursor:not-allowed;}
+.selected{outline:3px solid #fff;}
+button{
+  padding:14px 20px;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+  background:#25d366;
+  color:#000;
+  font-weight:bold;
+}
+button:disabled{opacity:.5;}
+.legend{opacity:.7;font-size:14px;}
+</style>
+</head>
+
+<body>
+
+<h1>Agende seu horário 💈</h1>
+
+<input type="date" id="datePicker">
+
+<div id="slots">
+  <div class="legend">Selecione uma data 📅</div>
+</div>
+
+<button id="whatsBtn" disabled>Agendar no WhatsApp</button>
+
+<script>
+// 🔧 CONFIG
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/1NQNYt1AkGFU75WFrWkXwpqugGH5TXwVUZ9r0AGnm_xY/export?format=csv";
+const WHATSAPP = "5599999999999"; // TROQUE PELO NÚMERO DO BARBEIRO
+
+const timeSlots = [
+ "09:00","09:30","10:00","10:30","11:00","11:30",
+ "12:00","12:30","13:00","13:30","14:00","14:30",
+ "15:00","15:30","16:00","16:30","17:00","17:30",
+ "18:00","18:30","19:00","19:30","20:00","20:30","21:00"
+];
+
+let busyByDate = {};
+let selectedDate = "";
+let selectedTime = "";
+
+const datePicker = document.getElementById("datePicker");
+const slotsDiv = document.getElementById("slots");
+const btn = document.getElementById("whatsBtn");
+
+// DATA MÍNIMA = HOJE
+datePicker.min = new Date().toISOString().split("T")[0];
+
+// 🔹 LER PLANILHA
+fetch(SHEET_URL)
+.then(r=>r.text())
+.then(csv=>{
+  const lines = csv.split("\n").slice(1);
+  lines.forEach(l=>{
+    const [data, hora] = l.split(",");
+    if(!busyByDate[data]) busyByDate[data] = [];
+    busyByDate[data].push(hora);
+  });
+});
+
+datePicker.addEventListener("change",()=>{
+  selectedDate = datePicker.value;
+  selectedTime = "";
+  btn.disabled = true;
+  renderSlots();
+});
+
+function renderSlots(){
+  slotsDiv.innerHTML = "";
+  const busyList = new Set(busyByDate[selectedDate] || []);
+  const now = new Date();
+
+  timeSlots.forEach(t=>{
+    const el = document.createElement("div");
+    const [h,m] = t.split(":");
+
+    const slotDate = new Date(selectedDate);
+    slotDate.setHours(h,m,0,0);
+
+    const bloqueado = slotDate < now || busyList.has(t);
+    el.className = "slot " + (bloqueado ? "busy" : "free");
+    el.innerText = t;
+
+    if(!bloqueado){
+      el.onclick = ()=>{
+        document.querySelectorAll(".slot").forEach(x=>x.classList.remove("selected"));
+        el.classList.add("selected");
+        selectedTime = t;
+        btn.disabled = false;
+      };
+    }
+
+    slotsDiv.appendChild(el);
+  });
+}
+
+btn.onclick = ()=>{
+  const msg = `Olá! Quero agendar um horário 💈
+📅 Data: ${selectedDate}
+⏰ Horário: ${selectedTime}`;
+
+  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`,"_blank");
+};
+</script>
+
+</body>
+</html>
